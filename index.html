@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Read">
+<meta name="theme-color" content="#0d1b2a">
+<title>Reading Queue</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%230d1b2a'/%3E%3Ctext x='90' y='122' font-size='96' font-family='Georgia,serif' fill='%23c8a04a' text-anchor='middle'%3ER%3C/text%3E%3C/svg%3E">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:#0d1b2a;color:#e8eaed;
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       font-size:16px;line-height:1.5;padding:0 0 90px;
+       padding-top:env(safe-area-inset-top)}
+  header{padding:20px 18px 14px;border-bottom:1px solid #1e3050;position:sticky;top:0;
+         background:rgba(13,27,42,.97);backdrop-filter:blur(12px);z-index:20}
+  h1{margin:0;font-size:21px;letter-spacing:-.3px;font-weight:650}
+  .sub{color:#8fa3bd;font-size:12.5px;margin-top:3px}
+  .rule{margin:0 18px 4px;padding:11px 13px;background:#132539;border-left:3px solid #c8a04a;
+        border-radius:6px;font-size:13px;color:#c9d6e5;margin-top:14px}
+  .rule b{color:#e8c87a}
+  .tabs{display:flex;gap:7px;padding:14px 18px 6px;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;padding:9px 15px;border-radius:20px;background:#152a42;color:#9fb3cc;
+       font-size:13.5px;font-weight:600;border:1px solid #1e3a5c;cursor:pointer;white-space:nowrap}
+  .tab.on{background:#c8a04a;color:#0d1b2a;border-color:#c8a04a}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:1.4px;color:#7d92ad;
+     margin:26px 18px 9px;font-weight:700}
+  .card{display:block;margin:0 14px 9px;padding:14px 15px;background:#132539;border-radius:11px;
+        text-decoration:none;color:inherit;border:1px solid #1c304c}
+  .card:active{background:#1a3049}
+  .top{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+  .chip{font-size:10.5px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;
+        padding:3px 8px;border-radius:5px}
+  .econ{background:#e3120b;color:#fff}
+  .wsj{background:#e8eaed;color:#0d1b2a}
+  .ken{background:#00b4a6;color:#04231f}
+  .et{background:#f5d76e;color:#3a2c00}
+  .mint{background:#6a8fd6;color:#04122e}
+  .bs{background:#b0472f;color:#fff}
+  .time{margin-left:auto;font-size:11.5px;color:#7d92ad;font-weight:600}
+  .title{font-size:15.5px;font-weight:620;line-height:1.35;letter-spacing:-.2px}
+  .why{font-size:13px;color:#9fb3cc;margin-top:5px;line-height:1.45}
+  .why em{color:#e8c87a;font-style:normal;font-weight:600}
+  .note{margin:0 18px 14px;font-size:12.5px;color:#7d92ad;line-height:1.5}
+  .cap{margin:26px 14px 0;padding:16px;background:#132539;border-radius:11px;border:1px solid #1c304c}
+  .cap h3{margin:0 0 4px;font-size:14.5px}
+  .cap p{margin:0 0 11px;font-size:12.5px;color:#8fa3bd}
+  textarea{width:100%;min-height:78px;background:#0d1b2a;border:1px solid #24405f;border-radius:8px;
+           color:#e8eaed;padding:11px;font-size:15px;font-family:inherit;resize:vertical}
+  .row{display:flex;gap:8px;margin-top:9px}
+  button{flex:1;padding:11px;border-radius:8px;border:none;font-size:14px;font-weight:650;
+         cursor:pointer;font-family:inherit}
+  .primary{background:#c8a04a;color:#0d1b2a}
+  .ghost{background:#1c304c;color:#c9d6e5}
+  #log{margin-top:13px;font-size:13px;color:#9fb3cc}
+  #log div{padding:9px 0;border-top:1px solid #1c304c;line-height:1.45}
+  #log span{color:#61789a}
+  .stamp{color:#63799a;font-size:11px;display:block;margin-top:2px}
+  footer{margin:28px 18px 0;font-size:11.5px;color:#61789a;line-height:1.6}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Reading Queue</h1>
+  <div class="sub" id="today"></div>
+</header>
+
+<div class="rule">
+  <b>The filter:</b> does this teach a <b>mechanism</b> or report an <b>event</b>? Mechanisms are reusable in November. Events are not. If you can't imagine using it in a sentence six weeks from now, skip it.
+</div>
+
+<div class="tabs">
+  <div class="tab on" data-f="all">All</div>
+  <div class="tab" data-f="5">5 min</div>
+  <div class="tab" data-f="15">15 min</div>
+  <div class="tab" data-f="30">30 min</div>
+</div>
+
+<h2>Open these sections, not front pages</h2>
+<div class="note">Front pages are event reporting. These sections are argument pieces — one mechanism each. Tap, scan three headlines, apply the filter, pick one.</div>
+
+<a class="card" data-t="5" href="https://www.wsj.com/news/types/heard-on-the-street" target="_blank" rel="noopener">
+  <div class="top"><span class="chip wsj">WSJ</span><span class="time">5 min</span></div>
+  <div class="title">Heard on the Street</div>
+  <div class="why">600 words, one analytical claim per piece. <em>The single best use of a five-minute gap you have.</em></div>
+</a>
+
+<a class="card" data-t="15" href="https://www.economist.com/finance-and-economics" target="_blank" rel="noopener">
+  <div class="top"><span class="chip econ">ECONOMIST</span><span class="time">15 min</span></div>
+  <div class="title">Finance &amp; Economics</div>
+  <div class="why">The densest mechanism-per-minute section in journalism. Two or three pieces a week are worth your time; the section tells you which.</div>
+</a>
+
+<a class="card" data-t="15" href="https://www.economist.com/topics/buttonwood" target="_blank" rel="noopener">
+  <div class="top"><span class="chip econ">ECONOMIST</span><span class="time">15 min</span></div>
+  <div class="title">Buttonwood — markets column</div>
+  <div class="why">Weekly. Takes one market puzzle and explains why it exists. <em>Closest thing in print to a valuation interview answer.</em></div>
+</a>
+
+<a class="card" data-t="15" href="https://www.economist.com/topics/schumpeter" target="_blank" rel="noopener">
+  <div class="top"><span class="chip econ">ECONOMIST</span><span class="time">15 min</span></div>
+  <div class="title">Schumpeter — business strategy column</div>
+  <div class="why">Corporate strategy, one company or one idea per week. Maps directly onto your STRG coursework and onto consulting cases.</div>
+</a>
+
+<a class="card" data-t="15" href="https://www.economist.com/topics/free-exchange" target="_blank" rel="noopener">
+  <div class="top"><span class="chip econ">ECONOMIST</span><span class="time">15 min</span></div>
+  <div class="title">Free Exchange — economics column</div>
+  <div class="why">Usually explains a piece of research. Good for NMEU and MGEC reinforcement.</div>
+</a>
+
+<a class="card" data-t="5" href="https://www.economist.com/the-world-this-week" target="_blank" rel="noopener">
+  <div class="top"><span class="chip econ">ECONOMIST</span><span class="time">5 min</span></div>
+  <div class="title">The World This Week</div>
+  <div class="why">One page, the whole week. <em>Use this when you have five minutes and no appetite for depth.</em></div>
+</a>
+
+<a class="card" data-t="30" href="https://the-ken.com/all-stories/" target="_blank" rel="noopener">
+  <div class="top"><span class="chip ken">THE KEN</span><span class="time">25-30 min</span></div>
+  <div class="title">The daily story</div>
+  <div class="why">One long piece a day on an Indian business, always mechanism-first. <em>Highest value per article in your whole list — but it needs a real gap, not a corridor.</em></div>
+</a>
+
+<a class="card" data-t="15" href="https://the-ken.com/long_and_short/" target="_blank" rel="noopener">
+  <div class="top"><span class="chip ken">THE KEN</span><span class="time">12 min</span></div>
+  <div class="title">Long and Short</div>
+  <div class="why">Shorter Ken format. Markets and company analysis with the numbers shown.</div>
+</a>
+
+<a class="card" data-t="15" href="https://the-ken.com/kaching/" target="_blank" rel="noopener">
+  <div class="top"><span class="chip ken">THE KEN</span><span class="time">12 min</span></div>
+  <div class="title">Ka-Ching — fintech and lending</div>
+  <div class="why">Banking, NBFCs, payments. Three of your casebook industry primers live here, and it is where Indian finance interviews get their questions.</div>
+</a>
+
+<a class="card" data-t="30" href="https://economictimes.indiatimes.com/prime" target="_blank" rel="noopener">
+  <div class="top"><span class="chip et">ET PRIME</span><span class="time">20 min</span></div>
+  <div class="title">ET Prime — long-form only</div>
+  <div class="why"><em>Skip the ET front page entirely.</em> It is event reporting at low value per minute. Prime is where the analysis lives.</div>
+</a>
+
+<a class="card" data-t="15" href="https://www.livemint.com/plain-facts" target="_blank" rel="noopener">
+  <div class="top"><span class="chip mint">MINT</span><span class="time">10 min</span></div>
+  <div class="title">Plain Facts</div>
+  <div class="why">Data-led explainers on the Indian economy. Charts you can quote in a GD.</div>
+</a>
+
+<a class="card" data-t="30" href="https://www.livemint.com/long-story" target="_blank" rel="noopener">
+  <div class="top"><span class="chip mint">MINT</span><span class="time">20 min</span></div>
+  <div class="title">Mint Long Story</div>
+  <div class="why">Weekly deep dive, usually an industry. Good complement to your casebook primers.</div>
+</a>
+
+<a class="card" data-t="5" href="https://www.business-standard.com/opinion" target="_blank" rel="noopener">
+  <div class="top"><span class="chip bs">BS</span><span class="time">7 min</span></div>
+  <div class="title">Business Standard — Opinion</div>
+  <div class="why">Not paywalled. Indian policy and markets commentary, and the source your daily brief is built from.</div>
+</a>
+
+<h2>Today's specific picks</h2>
+<div class="note">Refreshed with today's morning brief, 2 September. These are open-access or Ken links verified directly.</div>
+
+<a class="card" data-t="5" href="https://www.business-standard.com/companies/news/zerodha-receives-sebi-approval-to-enter-investment-banking-business-126090200835_1.html" target="_blank" rel="noopener">
+  <div class="top"><span class="chip bs">BS</span><span class="time">5 min</span></div>
+  <div class="title">Zerodha receives Sebi approval to enter investment banking business</div>
+  <div class="why">Broking income fell from ₹3,600 cr to ₹2,738 cr over three years while MTF and interest income picked up the slack. <em>A clean five-minute case study in diversifying when your core product's price gets regulated to zero.</em></div>
+</a>
+
+<a class="card" data-t="5" href="https://www.business-standard.com/markets/news/coal-india-rallies-4-on-huge-volume-on-mahanadi-coalfields-ipo-buzz-126090200221_1.html" target="_blank" rel="noopener">
+  <div class="top"><span class="chip bs">BS</span><span class="time">5 min</span></div>
+  <div class="title">Coal India rallies 4% on huge volume amid Mahanadi Coalfields IPO buzz</div>
+  <div class="why">10% stake, 661.8 million shares, pure offer for sale. <em>Read this alongside today's Deal Desk and check your own back-of-envelope number against the market's reaction.</em></div>
+</a>
+
+<a class="card" data-t="15" href="https://www.business-standard.com/markets/news/bse-shares-slide-15-since-cas-implementation-jefferies-flags-options-hit-126090200650_1.html" target="_blank" rel="noopener">
+  <div class="top"><span class="chip bs">BS</span><span class="time">15 min</span></div>
+  <div class="title">BSE shares slide 15% since CAS implementation; Jefferies flags options hit</div>
+  <div class="why">₹20,231 cr of market value gone since 3 August on a rule change that didn't name BSE once. <em>The clearest live example of revenue-concentration risk you'll find this quarter.</em></div>
+</a>
+
+<a class="card" data-t="15" href="https://the-ken.com/intermission/a-bank-in-all-but-name-bajaj-finance/" target="_blank" rel="noopener">
+  <div class="top"><span class="chip ken">THE KEN</span><span class="time">15 min</span></div>
+  <div class="title">A Bank in All But Name: Bajaj Finance</div>
+  <div class="why">How an NBFC without a banking licence competes head-on with banks. <em>Direct background for why Zerodha's own move into merchant banking isn't an isolated event.</em></div>
+</a>
+
+<a class="card" data-t="30" href="https://the-ken.com/the-collection/the-exit-at-hdfc-bank-is-not-just-about-hdfc-bank/" target="_blank" rel="noopener">
+  <div class="top"><span class="chip ken">THE KEN</span><span class="time">30 min</span></div>
+  <div class="title">The exit at HDFC Bank is not just about HDFC Bank</div>
+  <div class="why">Positions Jagdishan's exit inside a wider pattern of private-bank governance churn. <em>Paywalled — read the framing even if you can't get past it.</em></div>
+</a>
+
+<a class="card" data-t="30" href="https://the-ken.com/story/at-rbi-licensed-nbfcs-600-annual-interest-is-board-approved-reasonable-and-perfectly-legal/" target="_blank" rel="noopener">
+  <div class="top"><span class="chip ken">THE KEN</span><span class="time">30 min</span></div>
+  <div class="title">At RBI-licensed NBFCs, 600% annual interest is board-approved, 'reasonable', and perfectly legal</div>
+  <div class="why">Regulatory arbitrage inside a licensed system, not outside it. <em>The single best NBFC-regulation read in your queue for an interview on financial-sector oversight.</em></div>
+</a>
+
+<h2>This week, look for</h2>
+<div class="note">
+  I can't see inside the Economist, WSJ, Mint or ET &mdash; they block automated access entirely. So instead of naming articles, here is what to <em>scan for</em> when you open those sections this week. If a headline touches one of these, it is worth your gap.
+  <br><br>
+  <b style="color:#e8c87a">1. Who HDFC Bank names as Jagdishan's successor, and from where.</b> Egon Zehnder was expected to be engaged this week; internal continuity (Kaizad Bharucha) versus an external reset is the re-rating catalyst every brokerage note is now waiting on.<br><br>
+  <b style="color:#e8c87a">2. Whether the US 10-year Treasury yield actually touches 5%.</b> Chris Wood flagged that level as the near-term trigger point for a broader equity correction; it closed at 4.81% on Wednesday.<br><br>
+  <b style="color:#e8c87a">3. Whether Mahanadi Coalfields' draft IPO papers show a valuation above or below the naive 28.4%-of-CIL sum-of-parts estimate.</b> That gap, once real numbers land, is the whole lesson of today's Deal Desk made concrete.<br><br>
+  <b style="color:#e8c87a">4. Whether BSE's options turnover stabilises now CAS has been running a month, or keeps falling.</b> Jefferies called August's ₹539 billion industry premium ADTO the lowest since February 2025 — watch whether September confirms a trend or was a one-month adjustment.
+</div>
+
+<div class="cap">
+  <h3>Capture — one line, right now</h3>
+  <p>Not a summary. A <b>claim you could defend.</b> If you can't write one, the article wasn't worth reading, and you just learned something about your filter.</p>
+  <textarea id="entry" placeholder="e.g. Bank NIMs compress when rates fall because assets reprice faster than deposits."></textarea>
+  <div class="row">
+    <button class="primary" onclick="add()">Save line</button>
+    <button class="ghost" onclick="copyAll()">Copy all</button>
+  </div>
+  <div id="log"></div>
+  <div class="row" style="margin-top:12px">
+    <button class="ghost" onclick="clearAll()" style="font-size:12.5px">Clear after weekly synthesis</button>
+  </div>
+</div>
+
+<footer>
+  Every Sunday, paste your saved lines into chat. I turn the week into three positions you hold, each with evidence and its strongest counter-argument. That is the part that makes you stand out — not knowing facts, but having views you can defend.
+</footer>
+
+<script>
+(function(){
+  var d=new Date();
+  document.getElementById('today').textContent =
+    d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}) + ' · pick one, then close this';
+
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.onclick=function(){
+      document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on')});
+      t.classList.add('on');
+      var f=t.dataset.f;
+      document.querySelectorAll('.card').forEach(function(c){
+        c.classList.toggle('hidden', f!=='all' && c.dataset.t!==f);
+      });
+    };
+  });
+  render();
+})();
+
+function get(){ try{ return JSON.parse(localStorage.getItem('rq_log')||'[]'); }catch(e){ return []; } }
+function set(v){ localStorage.setItem('rq_log', JSON.stringify(v)); }
+
+function add(){
+  var el=document.getElementById('entry'), t=el.value.trim();
+  if(!t) return;
+  var a=get();
+  a.unshift({t:t, d:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})});
+  set(a); el.value=''; render();
+}
+function render(){
+  var a=get(), l=document.getElementById('log');
+  l.innerHTML = a.length ? '' : '';
+  a.forEach(function(x){
+    var div=document.createElement('div');
+    div.textContent=x.t;
+    var s=document.createElement('span'); s.className='stamp'; s.textContent=x.d;
+    div.appendChild(s); l.appendChild(div);
+  });
+}
+function copyAll(){
+  var a=get();
+  if(!a.length){ alert('Nothing saved yet.'); return; }
+  var txt=a.map(function(x){ return '- ' + x.t + '  ('+x.d+')'; }).join('\n');
+  navigator.clipboard.writeText(txt).then(function(){ alert('Copied '+a.length+' lines. Paste into chat.'); },
+    function(){ prompt('Copy this:', txt); });
+}
+function clearAll(){
+  if(confirm('Clear all saved lines? Do this only after the weekly synthesis.')){ set([]); render(); }
+}
+</script>
+</body>
+</html>
